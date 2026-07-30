@@ -148,18 +148,54 @@ npm run test:watch  # Modo watch
 
 ## 🤖 Uso de IA en el proceso de desarrollo
 
-Durante el desarrollo utilicé IA (Antigravity / Gemini) como asistente en las siguientes situaciones:
+Durante el desarrollo usé IA (Antigravity / Gemini) para consultas puntuales: dudas concretas que surgían mientras escribía el código, no para generar features enteras.
 
-- **Scaffolding inicial**: Generación de estructura de carpetas y configuración de dependencias.
-- **Servicios de Firebase**: Generación de `taskService.ts` con operaciones Firestore y filtros por `userId`.
-- **Vercel Function**: Generación del handler de AWS SES con validación de parámetros.
-- **CSS Design System**: Generación del sistema de diseño dark-mode con variables CSS y animaciones.
-- **Tests**: Generación de casos de prueba para `TodoForm` y `TodoList`.
+---
 
-**Patrones descubiertos:**
-- La IA es especialmente efectiva para código boilerplate (configuración, tipos, servicios) donde la estructura es predecible.
-- Para lógica de negocio crítica (filtros de seguridad, manejo de errores) es importante revisar cada línea generada.
-- Los prompts más efectivos describían el contexto completo: stack, estructura existente y restricciones de seguridad.
+**¿Cómo convierto un `Timestamp` de Firestore a `Date` de JavaScript sin que TypeScript se queje?**
+
+> **IA:** Usá `(data.dueDate as Timestamp).toDate()` y agregá el chequeo `data.dueDate ?` antes para los campos opcionales. Si `createdAt` siempre existe, podés usar `?.toDate() ?? new Date()` como fallback.
+
+Aplicado en [`taskService.ts`](file:///c:/Users/enzul/OneDrive/Escritorio/PIm4/src/services/taskService.ts) al mapear los documentos de Firestore.
+
+---
+
+**Cuando el usuario recarga la página, por un instante aparece el login aunque esté autenticado. ¿Cómo evito ese flash?**
+
+> **IA:** Firebase tarda un tick en resolver `onAuthStateChanged`. Agregá un estado `loading: true` inicial en el contexto y en `ProtectedRoute` devolvé un spinner mientras `loading` sea `true`, antes de evaluar si hay usuario.
+
+Quedó implementado en [`useAuth.tsx`](file:///c:/Users/enzul/OneDrive/Escritorio/PIm4/src/hooks/useAuth.tsx) y [`ProtectedRoute.tsx`](file:///c:/Users/enzul/OneDrive/Escritorio/PIm4/src/routes/ProtectedRoute.tsx).
+
+---
+
+**Quiero que el drag-and-drop de tareas persista el orden en Firestore, pero sin hacer una request por cada tarea movida.**
+
+> **IA:** Usá `writeBatch` del SDK de Firestore: guardás todos los cambios de `order` en un batch y los commiteás en una sola operación. Para la UX, hacé el update del estado local primero (optimistic update) y si falla el batch, revertís con un refetch.
+
+Implementado en `reorderTasks()` dentro de [`taskService.ts`](file:///c:/Users/enzul/OneDrive/Escritorio/PIm4/src/services/taskService.ts) y en `reorder()` de [`useTasks.ts`](file:///c:/Users/enzul/OneDrive/Escritorio/PIm4/src/hooks/useTasks.ts).
+
+---
+
+**¿Cómo tipar el parámetro de `updateTask` para que solo acepte los campos editables, no todos los campos de `Task`?**
+
+> **IA:** Usá `Partial<Pick<Task, 'title' | 'description' | 'completed' | 'priority' | 'dueDate'>>`. `Pick` selecciona solo esos campos y `Partial` los hace todos opcionales.
+
+Aplicado en la firma de [`updateTask`](file:///c:/Users/enzul/OneDrive/Escritorio/PIm4/src/services/taskService.ts) y [`editTask`](file:///c:/Users/enzul/OneDrive/Escritorio/PIm4/src/hooks/useTasks.ts).
+
+---
+
+**¿Cómo evito que las credenciales de AWS queden expuestas en el frontend al llamar a SES?**
+
+> **IA:** Nunca llamés al SDK de AWS desde el cliente. Creá una Vercel Function en `/api/send-email.ts` — se ejecuta en el servidor de Vercel y las credenciales viven como variables de entorno del servidor, inaccesibles desde el browser. El frontend solo hace `fetch('/api/send-email', { method: 'POST', body: ... })`.
+
+Aplicado en [`api/send-email.ts`](file:///c:/Users/enzul/OneDrive/Escritorio/PIm4/api/send-email.ts).
+
+---
+
+**Lo que aprendí del proceso:**
+- Describir el problema concreto (con el error o la limitación) da mejores resultados que pedir que "genere algo".
+- La IA es útil para conocer APIs que no conocés bien (Firestore batch, TypeScript utility types), pero el contexto y la integración los tenés que entender vos.
+- Siempre revisé el código generado antes de usarlo, especialmente lo relacionado con seguridad y autenticación.
 
 ---
 
