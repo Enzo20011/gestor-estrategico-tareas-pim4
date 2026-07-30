@@ -33,7 +33,7 @@ project-root/
 │   ├── hooks/          # useAuth, useTasks
 │   ├── types/          # Tipos e interfaces TypeScript
 │   └── utils/          # Helpers
-├── api/
+├── functions/
 │   └── send-email.ts   # Vercel Function — AWS SES
 ├── tests/
 │   ├── components/     # Tests de componentes
@@ -103,7 +103,7 @@ SES_FROM_EMAIL=
 
 1. El usuario hace clic en **"Enviar resumen"** en la página de tareas.
 2. El frontend llama a `POST /api/send-email` con el email del usuario y la lista de tareas.
-3. La **Vercel Function** (`api/send-email.ts`) recibe la solicitud del lado del servidor.
+3. La **Vercel Function** (`functions/send-email.ts`) recibe la solicitud del lado del servidor.
 4. La función usa el **AWS SDK** para llamar a AWS SES con las credenciales de entorno.
 5. AWS SES envía el email HTML con el resumen de tareas al usuario.
 
@@ -188,7 +188,7 @@ Aplicado en la firma de [`updateTask`](file:///c:/Users/enzul/OneDrive/Escritori
 
 > **IA:** Nunca llamés al SDK de AWS desde el cliente. Creá una Vercel Function en `/api/send-email.ts` — se ejecuta en el servidor de Vercel y las credenciales viven como variables de entorno del servidor, inaccesibles desde el browser. El frontend solo hace `fetch('/api/send-email', { method: 'POST', body: ... })`.
 
-Aplicado en [`api/send-email.ts`](file:///c:/Users/enzul/OneDrive/Escritorio/PIm4/api/send-email.ts).
+Aplicado en [`functions/send-email.ts`](file:///c:/Users/enzul/OneDrive/Escritorio/PIm4/functions/send-email.ts).
 
 ---
 

@@ -2,7 +2,13 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "functions": {
+    "functions/send-email.ts": {
+      "runtime": "@vercel/node@5.x"
+    }
+  },
   "rewrites": [
+    { "source": "/api/send-email", "destination": "/functions/send-email" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
